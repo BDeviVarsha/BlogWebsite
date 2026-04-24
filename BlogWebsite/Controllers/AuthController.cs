@@ -44,5 +44,18 @@ namespace BlogWebsite.Controllers
 
             return Ok(new { message = "Login successful", user });
         }
+        [HttpGet("roles")]
+        public async Task<IActionResult> GetRoles()
+        {
+            try
+            {
+                var roles = await _userRepository.GetRoles();
+                return Ok(roles);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, ex.Message);
+            }
+        }
     }
 }

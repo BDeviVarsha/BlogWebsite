@@ -1,6 +1,8 @@
 ﻿using BlogWebsite.Models;
 using BlogWebsite.Repositories.Interface;
 using Dapper;
+using Npgsql;
+using System.Data;
 
 namespace BlogWebsite.Repositories.Implementation
 {
@@ -29,6 +31,12 @@ namespace BlogWebsite.Repositories.Implementation
 
             var sql = "SELECT * FROM users WHERE \"phoneNo\" = @PhoneNo AND role = @Role";
             return await connection.QuerySingleOrDefaultAsync<Users>(sql, new { phoneNo = phoneNo, role = role });
+        }
+        public async Task<IEnumerable<Roles>> GetRoles()
+        {
+            using var connection = new NpgsqlConnection(_connectionString);
+            var sql = "SELECT id, name FROM roles ORDER BY name";
+            return await connection.QueryAsync<Roles>(sql);
         }
     }
 }

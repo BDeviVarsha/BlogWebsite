@@ -8,6 +8,7 @@
 
   <ItemGroup>
     <PackageReference Include="Dapper" Version="2.1.72" />
+    <PackageReference Include="Microsoft.AspNetCore.SignalR" Version="1.2.9" />
     <PackageReference Include="Npgsql" Version="10.0.2" />
     <PackageReference Include="SSH.NET" Version="2025.1.0" />
     <PackageReference Include="Swashbuckle.AspNetCore" Version="6.6.2" />

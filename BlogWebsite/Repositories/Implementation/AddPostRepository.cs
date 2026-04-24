@@ -4,6 +4,7 @@ using BlogWebsite.Repositories.Interface;
 using BlogWebsite.Services;
 using Dapper;
 using Npgsql;
+using Org.BouncyCastle.Asn1.X509;
 using Renci.SshNet;
 
 namespace BlogWebsite.Repositories.Implementation
@@ -22,6 +23,31 @@ namespace BlogWebsite.Repositories.Implementation
         public async Task<int> Create(PostDto postDto)
         {
             string remoteFilePath = null;
+            //string folder = "uploads";
+            //var fileName = $"{Guid.NewGuid()}_{postDto.File.FileName}";
+            //var filePath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", folder, fileName);
+
+            //// Ensure directory exists
+            //Directory.CreateDirectory(Path.GetDirectoryName(filePath)!);
+            //using (var stream = new FileStream(filePath, FileMode.Create))
+            //{
+            //    await file.CopyToAsync(stream);
+            //}
+
+            //// Save post info to database
+            //var post = new Post
+            //{
+            //    Name = postDto.Name,
+            //    Title = postDto.Title,
+            //    Description = postDto.Description,
+            //    FilePath = $"/{folder}/{fileName}", // accessible via HTTP
+            //    //MediaType = file.ContentType.Split('/')[0] // "image", "video", or "audio"
+            //};
+
+            //// Save `post` to your database here (e.g., via Dapper or EF Core)
+            //var postId = await _postRepository.Create(post);
+
+            //return Ok(new { message = "Post created", postId, filePath = post.FilePath });
 
             if (postDto.File != null && postDto.File.Length > 0)
             {
