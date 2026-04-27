@@ -34,7 +34,7 @@ namespace BlogWebsite.Controllers
             var contentType = fileName.EndsWith(".mp3") ? "audio/mpeg" :
                               fileName.EndsWith(".png") ? "image/png" :
                               fileName.EndsWith(".jpg") ? "image/jpeg" :
-                              fileName.EndsWith(".txt") ? "text/plain" :
+                              fileName.EndsWith(".mp4") ? "video/mp4" :
                               "application/octet-stream";
 
             return File(stream, contentType, fileName);

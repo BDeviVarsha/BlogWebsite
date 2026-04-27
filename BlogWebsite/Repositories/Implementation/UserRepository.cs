@@ -1,4 +1,5 @@
-﻿using BlogWebsite.Models;
+﻿using BlogWebsite.DTOs;
+using BlogWebsite.Models;
 using BlogWebsite.Repositories.Interface;
 using Dapper;
 using Npgsql;
@@ -19,7 +20,7 @@ namespace BlogWebsite.Repositories.Implementation
         {
             using var connection = new Npgsql.NpgsqlConnection(_connectionString);
 
-            var sql = "INSERT INTO users (name, \"phoneNo\", role) VALUES (@Name, @PhoneNo, @Role);";
+            var sql = "INSERT INTO \"Users\" (name, \"phoneNo\", role) VALUES (@Name, @PhoneNo, @Role);";
             var id = await connection.ExecuteAsync(sql, user);
 
             return id;
@@ -27,16 +28,36 @@ namespace BlogWebsite.Repositories.Implementation
 
         public async Task<Users?> Login(long phoneNo, string role)
         {
-            using var connection = new Npgsql.NpgsqlConnection(_connectionString);
+            using var connection = new NpgsqlConnection(_connectionString);
 
-            var sql = "SELECT * FROM users WHERE \"phoneNo\" = @PhoneNo AND role = @Role";
-            return await connection.QuerySingleOrDefaultAsync<Users>(sql, new { phoneNo = phoneNo, role = role });
+            var user = await connection.QuerySingleOrDefaultAsync<Users>(@"SELECT * FROM ""Users""  WHERE ""phoneNo"" = @PhoneNo AND role = @Role", new { PhoneNo = phoneNo, Role = role });
+
+            if (user == null)
+                return null;
+
+            await connection.ExecuteAsync(@"UPDATE ""Users"" SET is_active = true, updated_at = NOW() WHERE id = @Id", new { user.Id });
+
+            return new Users
+            {
+                Id = user.Id,
+                Name = user.Name,        // 🔥 IMPORTANT
+                phoneNo = user.phoneNo,
+                Role = user.Role,
+                is_active = true
+            };
         }
         public async Task<IEnumerable<Roles>> GetRoles()
         {
             using var connection = new NpgsqlConnection(_connectionString);
             var sql = "SELECT id, name FROM roles ORDER BY name";
             return await connection.QueryAsync<Roles>(sql);
+        }
+        public async Task<bool> Logout(int userId)
+        {
+            using var connection = new NpgsqlConnection(_connectionString);
+
+            var rows = await connection.ExecuteAsync(@"UPDATE ""Users"" SET is_active = false, updated_at = NOW() WHERE id = @Id",  new { Id = userId });
+            return rows > 0;
         }
     }
 }

@@ -1,4 +1,5 @@
-﻿using BlogWebsite.Models;
+﻿using BlogWebsite.DTOs;
+using BlogWebsite.Models;
 using BlogWebsite.Repositories.Interface;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
@@ -56,6 +57,18 @@ namespace BlogWebsite.Controllers
             {
                 return StatusCode(500, ex.Message);
             }
+        }
+
+        [HttpPost("logout")]
+        public async Task<IActionResult> Logout([FromBody] LogoutDto logoutDto)
+        {            
+            Console.WriteLine("LOGOUT HIT");
+            var result = await _userRepository.Logout(logoutDto.userId);
+
+            if (!result)
+                return NotFound("User not found");
+
+            return Ok(new { message = "Logout successful" });
         }
     }
 }

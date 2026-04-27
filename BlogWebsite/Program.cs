@@ -22,9 +22,9 @@ builder.Services.AddSingleton<SftpService>();
 builder.Services.AddScoped<IAddPostRepository, AddPostRepository>();
 builder.Services.AddScoped<IHomeRepository, HomeRepository>();
 builder.Services.AddScoped<IUserRepository, UserRepository>();
-builder.Services.AddSingleton<IUserIdProvider, QueryStringUserIdProvider>();
-builder.Services.AddScoped<MessageRepository>(_ =>
-    new MessageRepository(builder.Configuration.GetConnectionString("DefaultConnection")));
+//builder.Services.AddSingleton<IUserIdProvider, QueryStringUserIdProvider>();
+builder.Services.AddScoped<IChatService, ChatService>();
+builder.Services.AddScoped<IMessageRepository, MessageRepository>();
 builder.Services.AddCors(options =>
 {
     options.AddPolicy("AllowAngular", builder => builder
