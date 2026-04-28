@@ -13,6 +13,8 @@ namespace BlogWebsite.Repositories.Implementation
         public SftpService _sftpService;
         private readonly string _connectionString;
 
+        
+        
         public HomeRepository(IConfiguration configuration, SftpService sftpService)
         {
             _connectionString = configuration.GetConnectionString("DefaultConnection");
@@ -21,7 +23,7 @@ namespace BlogWebsite.Repositories.Implementation
         public async Task<IEnumerable<Post>> GetAllPosts()
         {
             using var connection = new Npgsql.NpgsqlConnection(_connectionString);
-            var query = "SELECT * FROM post";
+            var query = "SELECT name, title, description, filepath, status FROM post where status='Approved'";
             return await connection.QueryAsync<Post>(query);
         }
     }

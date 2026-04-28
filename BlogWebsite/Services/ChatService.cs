@@ -17,8 +17,8 @@ namespace BlogWebsite.Services
         {
             var message = new Message
             {
-                SenderId = senderId,
-                ReceiverId = receiverId,
+                Sender_Id = senderId,
+                Receiver_Id = receiverId,
                 Content = content,
                 Timestamp = DateTime.UtcNow,
                 Seen = false

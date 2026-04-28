@@ -3,6 +3,10 @@ using BlogWebsite.Models;
 using BlogWebsite.Repositories.Interface;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.IdentityModel.Tokens;
+using System.IdentityModel.Tokens.Jwt;
+using System.Security.Claims;
+using System.Text;
 
 namespace BlogWebsite.Controllers
 {
@@ -11,10 +15,12 @@ namespace BlogWebsite.Controllers
     public class AuthController : ControllerBase
     {
         private readonly IUserRepository _userRepository;
+        public readonly IConfiguration _configuration;
 
-        public AuthController(IUserRepository userRepository)
+        public AuthController(IUserRepository userRepository, IConfiguration configuration)
         {
             _userRepository = userRepository;
+            _configuration = configuration;
         }
 
         [HttpPost("register")]
@@ -39,12 +45,22 @@ namespace BlogWebsite.Controllers
         [HttpPost("login")]
         public async Task<IActionResult> Login([FromBody] Users loginData)
         {
+
             var user = await _userRepository.Login(loginData.phoneNo, loginData.Role);
+
             if (user == null)
                 return Unauthorized("Invalid phone number or role");
 
-            return Ok(new { message = "Login successful", user });
+            var token = GenerateJwtToken(user);
+
+            return Ok(new
+            {
+                message = "Login successful",
+                token,
+                user
+            });
         }
+
         [HttpGet("roles")]
         public async Task<IActionResult> GetRoles()
         {
@@ -62,13 +78,36 @@ namespace BlogWebsite.Controllers
         [HttpPost("logout")]
         public async Task<IActionResult> Logout([FromBody] LogoutDto logoutDto)
         {            
-            Console.WriteLine("LOGOUT HIT");
+            //Console.WriteLine("LOGOUT HIT");
             var result = await _userRepository.Logout(logoutDto.userId);
 
             if (!result)
                 return NotFound("User not found");
 
             return Ok(new { message = "Logout successful" });
+        }
+        private string GenerateJwtToken(Users user)
+        {
+            var jwtSettings = _configuration.GetSection("Jwt");
+            var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtSettings["Key"]));
+            var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
+
+            var claims = new[]
+            {
+                new Claim("name", user.Name),
+                new Claim("id", user.Id.ToString()),
+                new Claim("role", user.Role)
+            };
+
+            var token = new JwtSecurityToken(
+                issuer: jwtSettings["Issuer"],
+                audience: jwtSettings["Audience"],
+                claims: claims,
+                expires: DateTime.UtcNow.AddHours(2),
+                signingCredentials: creds
+            );
+
+            return new JwtSecurityTokenHandler().WriteToken(token);
         }
     }
 }

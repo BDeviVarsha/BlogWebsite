@@ -1,6 +1,7 @@
 ﻿using BlogWebsite.DTOs;
 using BlogWebsite.Models;
 using BlogWebsite.Repositories.Interface;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 
@@ -16,13 +17,21 @@ namespace BlogWebsite.Controllers
         {
             _addPostRepository = addPostRepository;
         }
-        
+        //[Authorize]
         [HttpPost]
         public async Task<IActionResult> Post([FromForm] PostDto postdto)
         {
+            string username = "Anonymous";
+
+            if (User.Identity != null && User.Identity.IsAuthenticated)
+            {
+                username = User.Identity.Name; // comes from JWT
+            }
+
+            postdto.Name = username;
+
             var postId = await _addPostRepository.Create(postdto);
             return Ok(postId);
-            
         }
 
     }

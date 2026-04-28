@@ -1,5 +1,5 @@
 ﻿using BlogWebsite.Models;
-using BlogWebsite.Repositories.Implementation;
+using BlogWebsite.Repositories.Interface;
 using BlogWebsite.Services;
 using Microsoft.AspNetCore.SignalR;
 using System.Collections.Concurrent;
@@ -9,13 +9,15 @@ namespace BlogWebsite.Hubs
     public class ChatHub:Hub
     {
         private readonly IChatService _chatService;
+        private readonly IUserRepository _userRepository;
 
         // userId → connectionId mapping
         private static ConcurrentDictionary<int, string> _connections = new();
 
-        public ChatHub(IChatService chatService)
+        public ChatHub(IChatService chatService, IUserRepository userRepository)
         {
             _chatService = chatService;
+            _userRepository = userRepository;
         }
 
         // On connect → store user
@@ -51,15 +53,13 @@ namespace BlogWebsite.Hubs
             // Send to receiver
             if (_connections.TryGetValue(receiverId, out var receiverConn))
             {
-                await Clients.Client(receiverConn)
-                    .SendAsync("ReceiveMessage", message);
+                await Clients.Client(receiverConn).SendAsync("ReceiveMessage", message);
             }
 
             // Send back to sender
             if (_connections.TryGetValue(senderId, out var senderConn))
             {
-                await Clients.Client(senderConn)
-                    .SendAsync("ReceiveMessage", message);
+                await Clients.Client(senderConn).SendAsync("ReceiveMessage", message);
             }
         }
 
@@ -68,95 +68,23 @@ namespace BlogWebsite.Hubs
         {
             if (_connections.TryGetValue(receiverId, out var receiverConn))
             {
-                await Clients.Client(receiverConn)
-                    .SendAsync("UserTyping", senderId);
+                await Clients.Client(receiverConn).SendAsync("UserTyping", senderId);
             }
         }
 
         // SEND USERS LIST
         private async Task SendUsersList()
         {
-            var users = _connections.Keys.Select(id => new
+            var usersFromDb = await _userRepository.GetAllUsersAsync();
+
+            var users = usersFromDb.Select(u => new
             {
-                Id = id,
-                Name = $"User {id}",
-                IsOnline = true
+                Id = u.Id,
+                Name = u.Name,
+                is_active = u.is_active
             });
 
             await Clients.All.SendAsync("ReceiveUsers", users);
         }
-
-
-
-        //private readonly MessageRepository _repository;
-
-        //public ChatHub(MessageRepository repository)
-        //{
-        //    _repository = repository;
-        //}
-
-        //public async Task SendMessage(int senderId, int receiverId, string content)
-        //{
-        //    var userIdString = Context.GetHttpContext().Request.Query["userId"];
-        //    if (!int.TryParse(userIdString, out int userId))
-        //    {
-        //        throw new HubException("Invalid userId");
-        //    }
-
-        //    var message = new Message
-        //    {
-        //        SenderId = senderId,
-        //        ReceiverId = receiverId,
-        //        Content = content,
-        //        Timestamp = DateTime.UtcNow
-        //    };
-
-        //    var savedMessage = await _repository.SaveMessageAsync(message);
-
-        //    // Send to all clients or just to the receiver
-        //    await Clients.User(receiverId.ToString())
-        //                 .SendAsync("ReceiveMessage", savedMessage);
-        //    await Clients.Caller.SendAsync("ReceiveMessage", savedMessage); // also send to sender
-        //}
-
-        //public async Task Typing(int senderId, int receiverId)
-        //{
-        //    // Notify the receiver that the sender is typing
-        //    //await Clients.User(receiverId.ToString()).SendAsync("UserTyping", senderId);
-        //    try
-        //    {
-        //        await Clients.User(receiverId.ToString()).SendAsync("UserTyping", senderId);
-        //    }
-        //    catch (Exception ex)
-        //    {
-        //        throw new HubException($"Typing failed: {ex.Message} | {ex.InnerException?.Message}");
-        //    }
-        //}
-
-
-        //public async Task SendPrivateMessage(string userId, string message)
-        //{
-        //    await Clients.User(userId).SendAsync("ReceiveMessage", message);
-        //}
-
-        //public async Task SendGroupMessage(string groupName, string message)
-        //{
-        //    await Clients.Group(groupName).SendAsync("ReceiveMessage", message);
-        //}
-
-        //public async Task SendBroadcastMessage(string message)
-        //{
-        //    await Clients.All.SendAsync("ReceiveMessage", message);
-        //}
-
-        //public async Task JoinGroup(string groupName)
-        //{
-        //    await Groups.AddToGroupAsync(Context.ConnectionId, groupName);
-        //}
-
-        //public async Task LeaveGroup(string groupName)
-        //{
-        //    await Groups.RemoveFromGroupAsync(Context.ConnectionId, groupName);
-        //}
     }
 }

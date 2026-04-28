@@ -40,7 +40,7 @@ namespace BlogWebsite.Repositories.Implementation
             return new Users
             {
                 Id = user.Id,
-                Name = user.Name,        // 🔥 IMPORTANT
+                Name = user.Name,
                 phoneNo = user.phoneNo,
                 Role = user.Role,
                 is_active = true
@@ -58,6 +58,14 @@ namespace BlogWebsite.Repositories.Implementation
 
             var rows = await connection.ExecuteAsync(@"UPDATE ""Users"" SET is_active = false, updated_at = NOW() WHERE id = @Id",  new { Id = userId });
             return rows > 0;
+        }
+        public async Task<IEnumerable<Users>> GetAllUsersAsync()
+        {
+            using var connection = new NpgsqlConnection(_connectionString);
+
+            var sql = @"SELECT id, name, is_active FROM ""Users"" ORDER BY id;";
+
+            return await connection.QueryAsync<Users>(sql);
         }
     }
 }
