@@ -1,6 +1,7 @@
 ﻿using BlogWebsite.Models;
 using BlogWebsite.Repositories.Implementation;
 using BlogWebsite.Repositories.Interface;
+//using Renci.SshNet.Messages;
 
 namespace BlogWebsite.Services
 {
@@ -28,6 +29,14 @@ namespace BlogWebsite.Services
 
             return message;
         }
-
+        public async Task<List<Message>> GetMessagesAsync(int user1, int user2)
+        {
+            var messages = await _repo.GetMessagesAsync(user1, user2);
+            return messages.ToList();
+        }
+        public async Task MarkAsSeenAsync(int senderId, int receiverId)
+        {
+            await _repo.MarkAsSeenAsync(senderId, receiverId);
+        }
     }
 }

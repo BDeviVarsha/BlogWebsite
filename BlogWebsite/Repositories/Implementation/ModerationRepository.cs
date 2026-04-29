@@ -2,30 +2,29 @@
 using BlogWebsite.Repositories.Interface;
 using Dapper;
 using Npgsql;
+using System.Data;
 
 namespace BlogWebsite.Repositories.Implementation
 {
     public class ModerationRepository:IModerationRepository
     {
-        private readonly string _connectionString;
+        private readonly IDbConnection _db;
 
-        public ModerationRepository(IConfiguration configuration)
+        public ModerationRepository(IDbConnection db)
         {
-            _connectionString = configuration.GetConnectionString("DefaultConnection");
+            _db = db;
         }
 
         public async Task<IEnumerable<Post>> GetPendingAnonymousPostsAsync()
         {
-            using var connection = new NpgsqlConnection(_connectionString);
             string sql = "SELECT * FROM Post WHERE name = 'Anonymous' AND status = 'Pending'";
-            return await connection.QueryAsync<Post>(sql);
+            return await _db.QueryAsync<Post>(sql);
         }
 
         public async Task<bool> UpdatePostStatusAsync(int postId, string status)
         {
-            using var connection = new NpgsqlConnection(_connectionString);
             string sql = "UPDATE Post SET status = @Status WHERE postId = @PostId";
-            var rows = await connection.ExecuteAsync(sql, new { Status = status, PostId = postId });
+            var rows = await _db.ExecuteAsync(sql, new { Status = status, PostId = postId });
             return rows > 0;
         }
     }

@@ -1,49 +1,53 @@
 ﻿using BlogWebsite.DTOs;
-using BlogWebsite.Models;
 using BlogWebsite.Repositories.Interface;
 using BlogWebsite.Services;
 using Dapper;
 using Npgsql;
-using Org.BouncyCastle.Asn1.X509;
-using Renci.SshNet;
+using System.Data;
 
 namespace BlogWebsite.Repositories.Implementation
 {
     public class AddPostRepository : IAddPostRepository
     {
         public SftpService _sftpService;
-        private readonly string _connectionString;
+        private readonly IDbConnection _db;
 
-        public AddPostRepository(IConfiguration configuration, SftpService sftpService)
+        public AddPostRepository(IDbConnection db, SftpService sftpService)
         {
+            _db = db;
             _sftpService = sftpService;
-            _connectionString = configuration.GetConnectionString("DefaultConnection");
         }
 
         public async Task<int> Create(PostDto postDto)
         {
-            string remoteFilePath = null;
+            List<string> remoteFilePaths = new();
 
-            if (postDto.File != null && postDto.File.Length > 0)
+            if (postDto.Files != null && postDto.Files.Any())
             {
-                using var ms = new MemoryStream();
-                await postDto.File.CopyToAsync(ms);
-                _sftpService.UploadFile(ms, postDto.File.FileName);
-                remoteFilePath = $"{_sftpService.BasePath}/{postDto.File.FileName}";
+                foreach (var file in postDto.Files)
+                {
+                    if (file.Length > 0)
+                    {
+                        using var ms = new MemoryStream();
+                        await file.CopyToAsync(ms);
+                        _sftpService.UploadFile(ms, file.FileName);
+                        remoteFilePaths.Add($"{_sftpService.BasePath}/{file.FileName}");
+                    }
+                }
             }
-            // Determine status: anonymous submissions are pending
-            var isAnonymous = string.IsNullOrWhiteSpace(postDto.Name)
-                              || string.Equals(postDto.Name, "Anonymous", StringComparison.OrdinalIgnoreCase);
+
+            var filesCsv = string.Join(",", remoteFilePaths); // store as CSV or create a separate table
+
+            var isAnonymous = string.IsNullOrWhiteSpace(postDto.Name) || string.Equals(postDto.Name, "Anonymous", StringComparison.OrdinalIgnoreCase);
             var status = isAnonymous ? "Pending" : "Approved";
 
-            using var connection = new NpgsqlConnection(_connectionString);
             string sql = @"INSERT INTO Post (name, title, description, filepath, status) VALUES (@Name, @Title, @Description, @FilePath, @Status)";
-            return await connection.ExecuteAsync(sql, new
+            return await _db.ExecuteAsync(sql, new
             {
                 postDto.Name,
                 postDto.Title,
                 postDto.Description,
-                FilePath = remoteFilePath,
+                FilePath = filesCsv,
                 Status = status
             });
         }

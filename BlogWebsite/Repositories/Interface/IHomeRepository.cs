@@ -5,7 +5,7 @@ namespace BlogWebsite.Repositories.Interface
 {
     public interface IHomeRepository
     {
-        public Task<IEnumerable<Post>> GetAllPosts();
-        //public Stream GetPostFile(string fileName);
+        public Task<IEnumerable<Post>> GetAllPosts(int page, int limit);
+        Task<int> GetTotalPostsAsync();
     }
 }

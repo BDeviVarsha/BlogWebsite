@@ -17,24 +17,17 @@ namespace BlogWebsite.Repositories.Implementation
         public async Task<int> SaveMessageAsync(Message message)
         {
             // Validate that sender and receiver exist to avoid FK violation.
-            var senderCount = await _db.ExecuteScalarAsync<int>(
-                "SELECT COUNT(1) FROM \"Users\" WHERE id = @Id",
-                new { Id = message.Sender_Id });
+            var senderCount = await _db.ExecuteScalarAsync<int>("SELECT COUNT(1) FROM \"Users\" WHERE id = @Id", new { Id = message.Sender_Id });
 
             if (senderCount == 0)
                 throw new InvalidOperationException($"Sender with id {message.Sender_Id} does not exist.");
 
-            var receiverCount = await _db.ExecuteScalarAsync<int>(
-                "SELECT COUNT(1) FROM \"Users\" WHERE id = @Id",
-                new { Id = message.Receiver_Id });
+            var receiverCount = await _db.ExecuteScalarAsync<int>( "SELECT COUNT(1) FROM \"Users\" WHERE id = @Id", new { Id = message.Receiver_Id });
 
             if (receiverCount == 0)
                 throw new InvalidOperationException($"Receiver with id {message.Receiver_Id} does not exist.");
 
-            var query = @"INSERT INTO messages 
-                      (sender_id, receiver_id, content, timestamp, seen)
-                      VALUES (@Sender_Id, @Receiver_Id, @Content, @Timestamp, @Seen)
-                      RETURNING id;";
+            var query = @"INSERT INTO messages (sender_id, receiver_id, content, timestamp, seen) VALUES (@Sender_Id, @Receiver_Id, @Content, @Timestamp, @Seen) RETURNING id;";
 
             try
             {
@@ -60,6 +53,11 @@ namespace BlogWebsite.Repositories.Implementation
             //await _db.ExecuteAsync(query, new { senderId, receiverId });
             var rows = await _db.ExecuteAsync(query, new { senderId, receiverId });
             Console.WriteLine($"Rows updated: {rows}");
+        }
+        public int Count()
+        {
+            var query = "SELECT COUNT(*) FROM messages";
+            return _db.ExecuteScalar<int>(query);
         }
     }
 }

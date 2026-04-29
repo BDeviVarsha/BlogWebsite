@@ -1,4 +1,5 @@
 ﻿using BlogWebsite.Repositories.Interface;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 
@@ -6,6 +7,7 @@ namespace BlogWebsite.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
+    [Authorize(Roles = "Moderator")]
     public class ModerationController : ControllerBase
     {
         private readonly IModerationRepository _moderationRepository;

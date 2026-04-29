@@ -78,7 +78,6 @@ namespace BlogWebsite.Controllers
         [HttpPost("logout")]
         public async Task<IActionResult> Logout([FromBody] LogoutDto logoutDto)
         {            
-            //Console.WriteLine("LOGOUT HIT");
             var result = await _userRepository.Logout(logoutDto.userId);
 
             if (!result)

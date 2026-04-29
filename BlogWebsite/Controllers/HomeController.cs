@@ -2,6 +2,7 @@
 using BlogWebsite.Services;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.RazorPages;
 
 namespace BlogWebsite.Controllers
 {
@@ -18,12 +19,20 @@ namespace BlogWebsite.Controllers
             _sftpService = sftpService;
         }
         [HttpGet("posts")]
-        public async Task<IActionResult> Get()
+        public async Task<IActionResult> GetPosts(int page = 1, int limit = 10)
         {
-            var posts = await _homeRepository.GetAllPosts();
-            return Ok(posts);
+            if (page < 1) page = 1;
+            if (limit < 1) limit = 10;
+
+            var posts = await _homeRepository.GetAllPosts(page, limit);
+            var total = await _homeRepository.GetTotalPostsAsync();
+
+            return Ok(new
+            {
+                posts, total
+            });
         }
-        
+
         [HttpGet("file/{fileName}")]
         public IActionResult GetFile(string fileName)
         {
