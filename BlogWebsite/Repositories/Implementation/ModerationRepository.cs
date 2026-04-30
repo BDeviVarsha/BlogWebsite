@@ -1,7 +1,6 @@
 ﻿using BlogWebsite.Models;
 using BlogWebsite.Repositories.Interface;
 using Dapper;
-using Npgsql;
 using System.Data;
 
 namespace BlogWebsite.Repositories.Implementation
@@ -20,11 +19,22 @@ namespace BlogWebsite.Repositories.Implementation
             string sql = "SELECT * FROM Post WHERE name = 'Anonymous' AND status = 'Pending'";
             return await _db.QueryAsync<Post>(sql);
         }
-
-        public async Task<bool> UpdatePostStatusAsync(int postId, string status)
+        public async Task<bool> ApprovePostAsync(int postId)
         {
-            string sql = "UPDATE Post SET status = @Status WHERE postId = @PostId";
-            var rows = await _db.ExecuteAsync(sql, new { Status = status, PostId = postId });
+            string sql = @"UPDATE Post 
+                   SET status = 'Approved' WHERE postId = @PostId";
+
+            var rows = await _db.ExecuteAsync(sql, new { PostId = postId});
+            return rows > 0;
+        }
+        public async Task<bool> RejectPostAsync(int postId, string reason)
+        {
+            string sql = @"UPDATE Post 
+                   SET status = 'Rejected', 
+                       ""RejectedReason"" = @Reason 
+                   WHERE postId = @PostId";
+
+            var rows = await _db.ExecuteAsync(sql, new { PostId = postId, Reason = reason });
             return rows > 0;
         }
     }

@@ -1,7 +1,5 @@
 ﻿using BlogWebsite.Models;
-using BlogWebsite.Repositories.Implementation;
 using BlogWebsite.Repositories.Interface;
-//using Renci.SshNet.Messages;
 
 namespace BlogWebsite.Services
 {

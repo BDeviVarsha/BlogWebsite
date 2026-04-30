@@ -1,5 +1,4 @@
-﻿using BlogWebsite.Models;
-using BlogWebsite.Repositories.Interface;
+﻿using BlogWebsite.Repositories.Interface;
 using BlogWebsite.Services;
 using Microsoft.AspNetCore.SignalR;
 using System.Collections.Concurrent;
@@ -55,12 +54,6 @@ namespace BlogWebsite.Hubs
             {
                 await Clients.Client(receiverConn).SendAsync("ReceiveMessage", message);
             }
-
-            // Send back to sender
-            if (_connections.TryGetValue(senderId, out var senderConn))
-            {
-                await Clients.Client(senderConn).SendAsync("ReceiveMessage", message);
-            }
         }
 
         // TYPING EVENT (matches Angular)
@@ -75,15 +68,7 @@ namespace BlogWebsite.Hubs
         // SEND USERS LIST
         private async Task SendUsersList()
         {
-            var usersFromDb = await _userRepository.GetAllUsersAsync();
-
-            var users = usersFromDb.Select(u => new
-            {
-                Id = u.Id,
-                Name = u.Name,
-                is_active = u.is_active
-            });
-
+            var users = await _userRepository.GetAllUsersAsync();
             await Clients.All.SendAsync("ReceiveUsers", users);
         }
     }

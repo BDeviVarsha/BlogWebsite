@@ -1,8 +1,6 @@
-﻿using BlogWebsite.DTOs;
-using BlogWebsite.Models;
+﻿using BlogWebsite.Models;
 using BlogWebsite.Repositories.Interface;
 using Dapper;
-using Npgsql;
 using System.Data;
 
 namespace BlogWebsite.Repositories.Implementation

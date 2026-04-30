@@ -1,8 +1,7 @@
-﻿using BlogWebsite.Repositories.Interface;
+﻿using BlogWebsite.Models;
+using BlogWebsite.Repositories.Interface;
 using BlogWebsite.Services;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Mvc.RazorPages;
 
 namespace BlogWebsite.Controllers
 {
@@ -47,6 +46,35 @@ namespace BlogWebsite.Controllers
                               "application/octet-stream";
 
             return File(stream, contentType, fileName);
+        }
+        //[Authorize]
+        [HttpGet("my-posts")]
+        public async Task<IActionResult> GetMyPosts()
+        {
+            var userId = User.FindFirst("id")?.Value;
+
+            var posts = await _homeRepository.GetPostsByUserId(userId);
+
+            return Ok(posts);
+        }
+        [HttpDelete("my-posts/{postId}")]
+        public async Task<IActionResult> DeleteMyPost(int postId)
+        {
+            var userId = User.FindFirst("id")?.Value;
+            var success = await _homeRepository.DeletePostAsync(postId, userId);
+            if (!success)
+                return NotFound(new { message = "Post not found or you don't have permission to delete it" });
+            return Ok(new { message = "Post deleted successfully" });
+        }
+        [HttpPut("my-posts/{postId}")]
+        public async Task<IActionResult> EditMyPost(int postId, [FromBody] Post post)
+        {
+            var userId = User.FindFirst("id")?.Value;
+            post.UserId = userId;
+            var updatedPost = await _homeRepository.EditPostById(postId, post);
+            if (updatedPost == null)
+                return NotFound(new { message = "Post not found or you don't have permission to edit it" });
+            return Ok(updatedPost);
         }
     }
 }

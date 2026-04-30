@@ -1,8 +1,5 @@
 ﻿using BlogWebsite.DTOs;
-using BlogWebsite.Models;
 using BlogWebsite.Repositories.Interface;
-using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 
 namespace BlogWebsite.Controllers

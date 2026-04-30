@@ -1,9 +1,6 @@
 ﻿using BlogWebsite.Models;
 using BlogWebsite.Repositories.Interface;
-using BlogWebsite.Services;
 using Dapper;
-using Microsoft.AspNetCore.Http.HttpResults;
-using Microsoft.AspNetCore.Mvc;
 using System.Data;
 
 namespace BlogWebsite.Repositories.Implementation
@@ -29,6 +26,33 @@ namespace BlogWebsite.Repositories.Implementation
         {
             var sql = "SELECT COUNT(*) FROM post";
             return await _db.ExecuteScalarAsync<int>(sql);
+        }
+        public async Task<IEnumerable<Post>> GetPostsByUserId(string userId)
+        {
+            var query = @"SELECT * FROM post WHERE UserId = @UserId ORDER BY postid DESC";
+
+            return await _db.QueryAsync<Post>(query, new { UserId = userId });
+        }
+        public async Task<bool> DeletePostAsync(int postId, string userId)
+        {
+            var query = @"DELETE FROM post WHERE postid = @PostId AND UserId = @UserId";
+            var result = await _db.ExecuteAsync(query, new { PostId = postId, UserId = userId });
+            return result > 0;
+        }
+        public async Task<Post?> EditPostById(int postId, Post post)
+        {
+            var query = @"UPDATE post SET Title = @Title, Description = @Description, FilePath = @FilePath, Status = @Status, RejectedReason = @RejectedReason
+                          WHERE postid = @PostId AND UserId = @UserId RETURNING *";
+            return await _db.QueryFirstOrDefaultAsync<Post>(query, new
+            {
+                Title = post.Title,
+                Description = post.Description,
+                FilePath = post.FilePath,
+                Status = post.Status,
+                RejectedReason = post.RejectedReason,
+                PostId = postId,
+                UserId = post.UserId
+            });
         }
     }
 }

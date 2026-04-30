@@ -2,7 +2,6 @@
 using BlogWebsite.Repositories.Interface;
 using BlogWebsite.Services;
 using Dapper;
-using Npgsql;
 using System.Data;
 
 namespace BlogWebsite.Repositories.Implementation

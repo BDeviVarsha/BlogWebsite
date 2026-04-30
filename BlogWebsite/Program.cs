@@ -4,7 +4,6 @@ using BlogWebsite.Repositories.Implementation;
 using BlogWebsite.Repositories.Interface;
 using BlogWebsite.Services;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
-using Microsoft.AspNetCore.SignalR;
 using Microsoft.Extensions.FileProviders;
 using Microsoft.IdentityModel.Tokens;
 using System.Data;
@@ -26,6 +25,7 @@ builder.Services.AddScoped<IAddPostRepository, AddPostRepository>();
 builder.Services.AddScoped<IHomeRepository, HomeRepository>();
 builder.Services.AddScoped<IUserRepository, UserRepository>();
 builder.Services.AddScoped<IModerationRepository, ModerationRepository>();
+builder.Services.AddScoped<IAdminRepository, AdminRepository>();
 //builder.Services.AddSingleton<IUserIdProvider, QueryStringUserIdProvider>();
 builder.Services.AddScoped<IChatService, ChatService>();
 builder.Services.AddScoped<IMessageRepository, MessageRepository>();
@@ -54,6 +54,7 @@ builder.Services.AddAuthentication(options =>
         NameClaimType = "name"
     };
 });
+builder.Services.AddScoped<JwtService>();
 
 builder.Services.AddAuthorization();
 builder.Services.AddCors(options =>

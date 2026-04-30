@@ -1,6 +1,4 @@
-﻿using BlogWebsite.DTOs;
-using BlogWebsite.Models;
-using System.Data;
+﻿using BlogWebsite.Models;
 
 namespace BlogWebsite.Repositories.Interface
 {

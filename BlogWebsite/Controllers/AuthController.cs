@@ -1,12 +1,8 @@
 ﻿using BlogWebsite.DTOs;
 using BlogWebsite.Models;
 using BlogWebsite.Repositories.Interface;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.IdentityModel.Tokens;
-using System.IdentityModel.Tokens.Jwt;
-using System.Security.Claims;
-using System.Text;
+using BlogWebsite.Services;
 
 namespace BlogWebsite.Controllers
 {
@@ -16,11 +12,13 @@ namespace BlogWebsite.Controllers
     {
         private readonly IUserRepository _userRepository;
         public readonly IConfiguration _configuration;
+        private readonly JwtService _jwtService;
 
-        public AuthController(IUserRepository userRepository, IConfiguration configuration)
+        public AuthController(IUserRepository userRepository, IConfiguration configuration, JwtService jwtService)
         {
             _userRepository = userRepository;
             _configuration = configuration;
+            _jwtService = jwtService;
         }
 
         [HttpPost("register")]
@@ -51,7 +49,7 @@ namespace BlogWebsite.Controllers
             if (user == null)
                 return Unauthorized("Invalid phone number or role");
 
-            var token = GenerateJwtToken(user);
+            var token = _jwtService.GenerateJwtToken(user);
 
             return Ok(new
             {
@@ -84,29 +82,6 @@ namespace BlogWebsite.Controllers
                 return NotFound("User not found");
 
             return Ok(new { message = "Logout successful" });
-        }
-        private string GenerateJwtToken(Users user)
-        {
-            var jwtSettings = _configuration.GetSection("Jwt");
-            var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtSettings["Key"]));
-            var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
-
-            var claims = new[]
-            {
-                new Claim("name", user.Name),
-                new Claim("id", user.Id.ToString()),
-                new Claim("role", user.Role)
-            };
-
-            var token = new JwtSecurityToken(
-                issuer: jwtSettings["Issuer"],
-                audience: jwtSettings["Audience"],
-                claims: claims,
-                expires: DateTime.UtcNow.AddHours(2),
-                signingCredentials: creds
-            );
-
-            return new JwtSecurityTokenHandler().WriteToken(token);
         }
     }
 }
