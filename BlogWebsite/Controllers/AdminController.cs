@@ -1,4 +1,5 @@
-﻿using BlogWebsite.Repositories.Interface;
+﻿using BlogWebsite.DTOs;
+using BlogWebsite.Repositories.Interface;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
@@ -25,22 +26,28 @@ namespace BlogWebsite.Controllers
         }
 
         // Delete post
-        [HttpDelete("posts/{id}")]
-        public async Task<IActionResult> DeletePost(int id)
+        [HttpPut("posts/{id}/delete")]
+        public async Task<IActionResult> DeletePost(int id, [FromBody] DeletePostDto dto)
         {
-            var result = await _repo.DeletePost(id);
+            if (dto == null || string.IsNullOrEmpty(dto.Reason))
+                return BadRequest(new { message = "Delete reason is required" });
+
+            var result = await _repo.DeletePost(id, dto.Reason);
 
             if (!result)
-                return NotFound("Post not found");
+                return NotFound(new { message = "Post not found" });
 
             return Ok(new { message = "Post deleted successfully" });
         }
 
         // Reject post
         [HttpPut("posts/{id}/reject")]
-        public async Task<IActionResult> RejectPost(int id)
+        public async Task<IActionResult> RejectPost(int id, [FromBody] RejectedReason reason)
         {
-            var result = await _repo.RejectPost(id);
+            if (reason == null || string.IsNullOrEmpty(reason.Reason))
+                return BadRequest(new { message = "Rejection reason is required" });
+
+            var result = await _repo.RejectPost(id, reason.Reason);
 
             if (!result)
                 return NotFound(new { message = "Post not found" });

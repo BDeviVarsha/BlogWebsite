@@ -3,6 +3,7 @@ using BlogWebsite.Repositories.Interface;
 using BlogWebsite.Services;
 using Dapper;
 using System.Data;
+using System.Net.NetworkInformation;
 
 namespace BlogWebsite.Repositories.Implementation
 {
@@ -27,10 +28,15 @@ namespace BlogWebsite.Repositories.Implementation
                 {
                     if (file.Length > 0)
                     {
-                        using var ms = new MemoryStream();
-                        await file.CopyToAsync(ms);
-                        _sftpService.UploadFile(ms, file.FileName);
-                        remoteFilePaths.Add($"{_sftpService.BasePath}/{file.FileName}");
+                        //using var ms = new MemoryStream();
+                        //await file.CopyToAsync(ms);
+                        //_sftpService.UploadFile(ms, file.FileName);
+                        //remoteFilePaths.Add($"{_sftpService.BasePath}/{file.FileName}");
+
+                        //using var ms = new MemoryStream();
+                        //await file.CopyToAsync(ms);
+                        var remoteFilePath = await _sftpService.UploadFileAsync(file);
+                        remoteFilePaths.Add(remoteFilePath);
                     }
                 }
             }
@@ -40,14 +46,16 @@ namespace BlogWebsite.Repositories.Implementation
             var isAnonymous = string.IsNullOrWhiteSpace(postDto.Name) || string.Equals(postDto.Name, "Anonymous", StringComparison.OrdinalIgnoreCase);
             var status = isAnonymous ? "Pending" : "Approved";
 
-            string sql = @"INSERT INTO Post (name, title, description, filepath, status) VALUES (@Name, @Title, @Description, @FilePath, @Status)";
+            string sql = @"INSERT INTO Post (name, title, description, filepath, status, userid) VALUES (@Name, @Title, @Description, @FilePath, @Status, @UserId)";
             return await _db.ExecuteAsync(sql, new
             {
                 postDto.Name,
                 postDto.Title,
                 postDto.Description,
                 FilePath = filesCsv,
-                Status = status
+                Status = status,
+                postDto.UserId,
+
             });
         }
     }

@@ -6,46 +6,85 @@ namespace BlogWebsite.Services
 {
     public class SftpService
     {
-        private readonly SftpSettings _settings;
-        public string BasePath => _settings.BasePath;
-        public SftpService(IOptions<SftpSettings> options)
+
+        private readonly string _host;
+        //private readonly string _port;
+        private readonly string _username;
+        private readonly string _password;
+        private readonly string _baseUrl;
+
+        public SftpService(IConfiguration config)
         {
-            _settings = options.Value;
+            _host = config["SftpConfig:Host"];
+            //_port = config["Sftp:Port"];
+            _username = config["SftpConfig:Username"];
+            _password = config["SftpConfig:Password"];
+            _baseUrl = config["SftpConfig:BaseUrl"];
         }
-        public void UploadFile(Stream fileStream, string fileName)
+
+        public async Task<string> UploadFileAsync(IFormFile file)
         {
-            using var client = new SftpClient(_settings.Host, _settings.Username, _settings.Password);
+            using var client = new SftpClient(_host, _username, _password);
             client.Connect();
 
-            if (!client.Exists(_settings.BasePath))
-            {
-                client.CreateDirectory(_settings.BasePath);
-            }
+            var fileName = Guid.NewGuid() + Path.GetExtension(file.FileName);
+            var remotePath = "/uploads/" + fileName;
 
-            var remoteFilePath = $"{_settings.BasePath}/{Path.GetFileName(fileName)}";
-            fileStream.Position = 0;
-            client.UploadFile(fileStream, remoteFilePath);
-            client.Disconnect();
-        }
+            using var stream = file.OpenReadStream();
+            if (!client.IsConnected)
+                throw new Exception("SFTP connection failed");
 
-        public Stream DownloadFile(string fileName)
-        {
-            using var client = new SftpClient(_settings.Host, _settings.Username, _settings.Password);
-            client.Connect();
+            if (!client.Exists("/uploads"))
+                client.CreateDirectory("/uploads");
+            await Task.Run(() => client.UploadFile(stream, remotePath));
 
-            var remotePath = $"{_settings.BasePath}/{fileName}";
-            if (!client.Exists(remotePath))
-            {
-                client.Disconnect();
-                return null;
-            }
-
-            var ms = new MemoryStream();
-            client.DownloadFile(remotePath, ms);
-            ms.Position = 0; // reset stream
             client.Disconnect();
 
-            return ms;
+            // 👉 Public URL (depends on your server setup)
+            return _baseUrl.TrimEnd('/') + "/" + fileName;
         }
+
+
+        //private readonly SftpSettings _settings;
+        //public string BasePath => _settings.BasePath;
+        //public SftpService(IOptions<SftpSettings> options)
+        //{
+        //    _settings = options.Value;
+        //}
+        //public void UploadFile(Stream fileStream, string fileName)
+        //{
+        //    using var client = new SftpClient(_settings.Host, _settings.Username, _settings.Password);
+        //    client.Connect();
+
+        //    if (!client.Exists(_settings.BasePath))
+        //    {
+        //        client.CreateDirectory(_settings.BasePath);
+        //    }
+
+        //    var remoteFilePath = $"{_settings.BasePath}/{Path.GetFileName(fileName)}";
+        //    fileStream.Position = 0;
+        //    client.UploadFile(fileStream, remoteFilePath);
+        //    client.Disconnect();
+        //}
+
+        //public Stream DownloadFile(string fileName)
+        //{
+        //    using var client = new SftpClient(_settings.Host, _settings.Username, _settings.Password);
+        //    client.Connect();
+
+        //    var remotePath = $"{_settings.BasePath}/{fileName}";
+        //    if (!client.Exists(remotePath))
+        //    {
+        //        client.Disconnect();
+        //        return null;
+        //    }
+
+        //    var ms = new MemoryStream();
+        //    client.DownloadFile(remotePath, ms);
+        //    ms.Position = 0; // reset stream
+        //    client.Disconnect();
+
+        //    return ms;
+        //}
     }
 }

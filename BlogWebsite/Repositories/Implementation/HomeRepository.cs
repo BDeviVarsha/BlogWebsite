@@ -17,7 +17,7 @@ namespace BlogWebsite.Repositories.Implementation
         public async Task<IEnumerable<Post>> GetAllPosts(int page, int limit)
         {
             int offset = (page - 1) * limit;
-            var sql = @"SELECT * FROM post OFFSET @Offset ROWS FETCH NEXT @Limit ROWS ONLY";
+            var sql = @"SELECT * FROM post where status='Approved' ORDER BY postid DESC OFFSET @Offset ROWS FETCH NEXT @Limit ROWS ONLY";
 
             return await _db.QueryAsync<Post>(sql, new { Offset = offset, Limit = limit });
         }
@@ -27,13 +27,13 @@ namespace BlogWebsite.Repositories.Implementation
             var sql = "SELECT COUNT(*) FROM post";
             return await _db.ExecuteScalarAsync<int>(sql);
         }
-        public async Task<IEnumerable<Post>> GetPostsByUserId(string userId)
+        public async Task<IEnumerable<Post>> GetPostsByUserId(int userId)
         {
             var query = @"SELECT * FROM post WHERE UserId = @UserId ORDER BY postid DESC";
 
             return await _db.QueryAsync<Post>(query, new { UserId = userId });
         }
-        public async Task<bool> DeletePostAsync(int postId, string userId)
+        public async Task<bool> DeletePostAsync(int postId, int userId)
         {
             var query = @"DELETE FROM post WHERE postid = @PostId AND UserId = @UserId";
             var result = await _db.ExecuteAsync(query, new { PostId = postId, UserId = userId });
@@ -45,13 +45,13 @@ namespace BlogWebsite.Repositories.Implementation
                           WHERE postid = @PostId AND UserId = @UserId RETURNING *";
             return await _db.QueryFirstOrDefaultAsync<Post>(query, new
             {
-                Title = post.Title,
-                Description = post.Description,
-                FilePath = post.FilePath,
-                Status = post.Status,
-                RejectedReason = post.RejectedReason,
                 PostId = postId,
-                UserId = post.UserId
+                post.Title,
+                post.Description,
+                post.FilePath,
+                post.Status,
+                post.RejectedReason,                
+                post.UserId
             });
         }
     }

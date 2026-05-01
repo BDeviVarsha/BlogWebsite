@@ -32,28 +32,28 @@ namespace BlogWebsite.Controllers
             });
         }
 
-        [HttpGet("file/{fileName}")]
-        public IActionResult GetFile(string fileName)
-        {
-            var stream = _sftpService.DownloadFile(fileName);
-            if (stream == null)
-                return NotFound();
+        //[HttpGet("file/{fileName}")]
+        //public IActionResult GetFile(string fileName)
+        //{
+        //    var stream = _sftpService.DownloadFile(fileName);
+        //    if (stream == null)
+        //        return NotFound();
 
-            var contentType = fileName.EndsWith(".mp3") ? "audio/mpeg" :
-                              fileName.EndsWith(".png") ? "image/png" :
-                              fileName.EndsWith(".jpg") ? "image/jpeg" :
-                              fileName.EndsWith(".mp4") ? "video/mp4" :
-                              "application/octet-stream";
+        //    var contentType = fileName.EndsWith(".mp3") ? "audio/mpeg" :
+        //                      fileName.EndsWith(".png") ? "image/png" :
+        //                      fileName.EndsWith(".jpg") ? "image/jpeg" :
+        //                      fileName.EndsWith(".mp4") ? "video/mp4" :
+        //                      "application/octet-stream";
 
-            return File(stream, contentType, fileName);
-        }
+        //    return File(stream, contentType, fileName);
+        //}
         //[Authorize]
         [HttpGet("my-posts")]
         public async Task<IActionResult> GetMyPosts()
         {
             var userId = User.FindFirst("id")?.Value;
 
-            var posts = await _homeRepository.GetPostsByUserId(userId);
+            var posts = await _homeRepository.GetPostsByUserId(int.Parse(userId));
 
             return Ok(posts);
         }
@@ -61,7 +61,7 @@ namespace BlogWebsite.Controllers
         public async Task<IActionResult> DeleteMyPost(int postId)
         {
             var userId = User.FindFirst("id")?.Value;
-            var success = await _homeRepository.DeletePostAsync(postId, userId);
+            var success = await _homeRepository.DeletePostAsync(postId, int.Parse(userId));
             if (!success)
                 return NotFound(new { message = "Post not found or you don't have permission to delete it" });
             return Ok(new { message = "Post deleted successfully" });
@@ -70,7 +70,7 @@ namespace BlogWebsite.Controllers
         public async Task<IActionResult> EditMyPost(int postId, [FromBody] Post post)
         {
             var userId = User.FindFirst("id")?.Value;
-            post.UserId = userId;
+            post.UserId = int.Parse(userId);
             var updatedPost = await _homeRepository.EditPostById(postId, post);
             if (updatedPost == null)
                 return NotFound(new { message = "Post not found or you don't have permission to edit it" });

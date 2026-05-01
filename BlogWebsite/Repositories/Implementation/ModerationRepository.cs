@@ -16,23 +16,19 @@ namespace BlogWebsite.Repositories.Implementation
 
         public async Task<IEnumerable<Post>> GetPendingAnonymousPostsAsync()
         {
-            string sql = "SELECT * FROM Post WHERE name = 'Anonymous' AND status = 'Pending'";
+            string sql = "SELECT * FROM Post WHERE name = 'Anonymous' AND status = 'Pending' ORDER BY postId DESC";
             return await _db.QueryAsync<Post>(sql);
         }
         public async Task<bool> ApprovePostAsync(int postId)
         {
-            string sql = @"UPDATE Post 
-                   SET status = 'Approved' WHERE postId = @PostId";
+            string sql = @"UPDATE Post SET status = 'Approved' WHERE postId = @PostId";
 
             var rows = await _db.ExecuteAsync(sql, new { PostId = postId});
             return rows > 0;
         }
         public async Task<bool> RejectPostAsync(int postId, string reason)
         {
-            string sql = @"UPDATE Post 
-                   SET status = 'Rejected', 
-                       ""RejectedReason"" = @Reason 
-                   WHERE postId = @PostId";
+            string sql = @"UPDATE Post SET status = 'Rejected', ""RejectedReason"" = @Reason WHERE postId = @PostId";
 
             var rows = await _db.ExecuteAsync(sql, new { PostId = postId, Reason = reason });
             return rows > 0;

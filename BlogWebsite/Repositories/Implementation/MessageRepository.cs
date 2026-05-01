@@ -22,7 +22,7 @@ namespace BlogWebsite.Repositories.Implementation
             if (senderCount == 0)
                 throw new InvalidOperationException($"Sender with id {message.Sender_Id} does not exist.");
 
-            var receiverCount = await _db.ExecuteScalarAsync<int>( "SELECT COUNT(1) FROM \"Users\" WHERE id = @Id", new { Id = message.Receiver_Id });
+            var receiverCount = await _db.ExecuteScalarAsync<int>("SELECT COUNT(1) FROM \"Users\" WHERE id = @Id", new { Id = message.Receiver_Id });
 
             if (receiverCount == 0)
                 throw new InvalidOperationException($"Receiver with id {message.Receiver_Id} does not exist.");
