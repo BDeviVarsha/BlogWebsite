@@ -44,6 +44,34 @@ namespace BlogWebsite.Services
             return _baseUrl.TrimEnd('/') + "/" + fileName;
         }
 
+        public async Task<Stream?> DownloadFileAsync(string fileName)
+        {
+            var remotePath = "/uploads/" + fileName;
+            using var client = new SftpClient(_host, _username, _password);
+            try
+            {
+                client.Connect();
+                if (!client.IsConnected)
+                    throw new Exception($"SFTP connection to {_host} failed.");
+
+                if (!client.Exists(remotePath))
+                    return null;
+
+                var ms = new MemoryStream();
+                await Task.Run(() => client.DownloadFile(remotePath, ms));
+                ms.Position = 0;
+                return ms;
+            }
+            finally
+            {
+                // Note: client disposed AFTER stream is returned
+                // MemoryStream is already fully buffered so safe to disconnect here
+                if (client.IsConnected)
+                    client.Disconnect();
+                client.Dispose();
+            }
+        }
+
 
         //private readonly SftpSettings _settings;
         //public string BasePath => _settings.BasePath;
