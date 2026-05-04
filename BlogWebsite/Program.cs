@@ -28,10 +28,7 @@ builder.Services.AddScoped<IModerationRepository, ModerationRepository>();
 builder.Services.AddScoped<IAdminRepository, AdminRepository>();
 builder.Services.AddScoped<IChatService, ChatService>();
 builder.Services.AddScoped<IMessageRepository, MessageRepository>();
-//builder.WebHost.ConfigureKestrel(options =>
-//{
-//    options.ListenAnyIP(7249); // HTTP
-//});
+
 var jwtSettings = builder.Configuration.GetSection("Jwt");
 var key = Encoding.UTF8.GetBytes(jwtSettings["Key"]);
 
@@ -68,17 +65,6 @@ builder.Services.AddCors(options =>
         .AllowCredentials()
         );
 });
-//builder.WebHost.ConfigureKestrel(options =>
-//{
-//    // HTTP for LAN access
-//    options.ListenAnyIP(5090);
-
-//    // HTTPS for local debugging and Swagger
-//    options.ListenLocalhost(7249, listenOptions =>
-//    {
-//        listenOptions.UseHttps();
-//    });
-//});
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.

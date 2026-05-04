@@ -1,7 +1,6 @@
 ﻿using BlogWebsite.DTOs;
 using BlogWebsite.Repositories.Interface;
 using Microsoft.AspNetCore.Mvc;
-using System.Security.Claims;
 
 namespace BlogWebsite.Controllers
 {
