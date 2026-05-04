@@ -7,24 +7,30 @@ namespace BlogWebsite.Services
     public class SftpService
     {
 
-        private readonly string _host;
-        //private readonly string _port;
-        private readonly string _username;
-        private readonly string _password;
-        private readonly string _baseUrl;
+        //private readonly string _host;
+        ////private readonly string _port;
+        //private readonly string _username;
+        //private readonly string _password;
+        //private readonly string _baseUrl;
 
-        public SftpService(IConfiguration config)
+        //public SftpService(IConfiguration config)
+        //{
+        //    _host = config["SftpConfig:Host"];
+        //    //_port = config["Sftp:Port"];
+        //    _username = config["SftpConfig:Username"];
+        //    _password = config["SftpConfig:Password"];
+        //    _baseUrl = config["SftpConfig:BaseUrl"];
+        //}
+        private readonly SftpSettings _settings;
+        //public string BasePath => _settings.BaseUrl;
+        public SftpService(IOptions<SftpSettings> options)
         {
-            _host = config["SftpConfig:Host"];
-            //_port = config["Sftp:Port"];
-            _username = config["SftpConfig:Username"];
-            _password = config["SftpConfig:Password"];
-            _baseUrl = config["SftpConfig:BaseUrl"];
+            _settings = options.Value;
         }
 
         public async Task<string> UploadFileAsync(IFormFile file)
         {
-            using var client = new SftpClient(_host, _username, _password);
+            using var client = new SftpClient(_settings.Host, _settings.Username, _settings.Password);
             client.Connect();
 
             var fileName = Guid.NewGuid() + Path.GetExtension(file.FileName);
@@ -40,19 +46,19 @@ namespace BlogWebsite.Services
 
             client.Disconnect();
 
-            // 👉 Public URL (depends on your server setup)
-            return _baseUrl.TrimEnd('/') + "/" + fileName;
+            //  Public URL (depends on your server setup)
+            return _settings.BaseUrl.TrimEnd('/') + "/" + fileName;
         }
 
         public async Task<Stream?> DownloadFileAsync(string fileName)
         {
             var remotePath = "/uploads/" + fileName;
-            using var client = new SftpClient(_host, _username, _password);
+            using var client = new SftpClient(_settings.Host, _settings.Username, _settings.Password);
             try
             {
                 client.Connect();
                 if (!client.IsConnected)
-                    throw new Exception($"SFTP connection to {_host} failed.");
+                    throw new Exception($"SFTP connection to {_settings.Host} failed.");
 
                 if (!client.Exists(remotePath))
                     return null;
