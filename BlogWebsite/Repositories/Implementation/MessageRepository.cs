@@ -46,13 +46,15 @@ namespace BlogWebsite.Repositories.Implementation
             return await _db.QueryAsync<Message>(query, new { user1, user2 });
         }
 
-        public async Task MarkAsSeenAsync(int senderId, int receiverId)
+        public async Task<List<int>> MarkAsSeenAsync(int senderId, int receiverId)
         {
-            var query = @"UPDATE messages SET seen = TRUE WHERE sender_id = @senderId AND receiver_id = @receiverId AND seen = FALSE";
+            var query = @"UPDATE messages SET seen = TRUE WHERE sender_id = @receiverId AND receiver_id = @senderId AND seen = FALSE RETURNING ID";
+            var seenMessageIds = await _db.QueryAsync<int>(query, new { senderId, receiverId });
 
+            return seenMessageIds.ToList();
             //await _db.ExecuteAsync(query, new { senderId, receiverId });
-            var rows = await _db.ExecuteAsync(query, new { senderId, receiverId });
-            Console.WriteLine($"Rows updated: {rows}");
+            //var rows = await _db.ExecuteAsync(query, new { senderId, receiverId });
+            //Console.WriteLine($"Rows updated: {rows}");
         }
         public int Count()
         {

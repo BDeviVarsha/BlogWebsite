@@ -71,5 +71,26 @@ namespace BlogWebsite.Hubs
             var users = await _userRepository.GetAllUsersAsync();
             await Clients.All.SendAsync("ReceiveUsers", users);
         }
+        //public async Task MarkAsSeen(int senderId, int receiverId)
+        //{
+        //    await _chatService.MarkAsSeenAsync(senderId, receiverId);
+        //    // Notify sender that messages have been seen
+        //    if (_connections.TryGetValue(senderId, out var senderConn))
+        //    {
+        //        await Clients.Client(senderConn).SendAsync("MessagesSeen", receiverId);
+        //    }
+        //}
+        public async Task MarkAsSeen(int senderId, int receiverId)
+        {
+            //Console.WriteLine($"MarkAsSeen called: {senderId} -> {receiverId}");
+            var seenMessageIds = await _chatService.MarkAsSeenAsync(senderId, receiverId);
+
+            // Notify sender (messages were seen)
+            if (_connections.TryGetValue(senderId, out var senderConn))
+            {
+                await Clients.Client(senderConn)
+                    .SendAsync("MessagesSeen", seenMessageIds);
+            }
+        }
     }
 }

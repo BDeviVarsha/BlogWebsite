@@ -32,9 +32,13 @@ namespace BlogWebsite.Services
             var messages = await _repo.GetMessagesAsync(user1, user2);
             return messages.ToList();
         }
-        public async Task MarkAsSeenAsync(int senderId, int receiverId)
+        //public async Task MarkAsSeenAsync(int senderId, int receiverId)
+        //{
+        //    await _repo.MarkAsSeenAsync(senderId, receiverId);
+        //}
+        public async Task<List<int>> MarkAsSeenAsync(int senderId, int receiverId)
         {
-            await _repo.MarkAsSeenAsync(senderId, receiverId);
+            return await _repo.MarkAsSeenAsync(senderId, receiverId);
         }
     }
 }

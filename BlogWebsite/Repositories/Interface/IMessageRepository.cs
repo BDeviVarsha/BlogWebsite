@@ -6,6 +6,6 @@ namespace BlogWebsite.Repositories.Interface
     {
         Task<int> SaveMessageAsync(Message message);
         Task<IEnumerable<Message>> GetMessagesAsync(int user1, int user2);
-        Task MarkAsSeenAsync(int senderId, int receiverId);
+        Task<List<int>> MarkAsSeenAsync(int senderId, int receiverId);
     }
 }

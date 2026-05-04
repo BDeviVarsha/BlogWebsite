@@ -6,6 +6,6 @@ namespace BlogWebsite.Services
     {
         Task<Message> SendMessageAsync(int senderId, int receiverId, string content);
         Task<List<Message>> GetMessagesAsync(int user1, int user2);
-        Task MarkAsSeenAsync(int senderId, int receiverId);
+        Task<List<int>> MarkAsSeenAsync(int senderId, int receiverId);
     }
 }
