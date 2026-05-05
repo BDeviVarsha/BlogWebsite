@@ -32,34 +32,34 @@ namespace BlogWebsite.Controllers
             });
         }
 
-        [HttpGet("file/{fileName}")]
-        public async Task<IActionResult> GetFile(string fileName)
-        {
-            // Basic path traversal guard
-            if (fileName.Contains("..") || fileName.Contains("/") || fileName.Contains("\\"))
-                return BadRequest("Invalid file name.");
+        //[HttpGet("file/{fileName}")]
+        //public async Task<IActionResult> GetFile(string fileName)
+        //{
+        //    // Basic path traversal guard
+        //    if (fileName.Contains("..") || fileName.Contains("/") || fileName.Contains("\\"))
+        //        return BadRequest("Invalid file name.");
 
-            var stream = await _sftpService.DownloadFileAsync(fileName);
+        //    var stream = await _sftpService.DownloadFileAsync(fileName);
 
-            if (stream == null)
-                return NotFound(new { message = $"File '{fileName}' not found on remote server." });
+        //    if (stream == null)
+        //        return NotFound(new { message = $"File '{fileName}' not found on remote server." });
 
-            var contentType = GetContentType(fileName);
-            return File(stream, contentType, enableRangeProcessing: true);
-        }
+        //    var contentType = GetContentType(fileName);
+        //    return File(stream, contentType, enableRangeProcessing: true);
+        //}
 
-        private static string GetContentType(string fileName)
-        {
-            var ext = Path.GetExtension(fileName).ToLowerInvariant();
-            return ext switch
-            {
-                ".jpg" or ".jpeg" => "image/jpeg",
-                ".png" => "image/png",
-                ".mp3" => "audio/mpeg",
-                ".mp4" => "video/mp4",
-                _ => "application/octet-stream"
-            };
-        }
+        //private static string GetContentType(string fileName)
+        //{
+        //    var ext = Path.GetExtension(fileName).ToLowerInvariant();
+        //    return ext switch
+        //    {
+        //        ".jpg" or ".jpeg" => "image/jpeg",
+        //        ".png" => "image/png",
+        //        ".mp3" => "audio/mpeg",
+        //        ".mp4" => "video/mp4",
+        //        _ => "application/octet-stream"
+        //    };
+        //}
         //[HttpGet("file/{fileName}")]
         //public IActionResult GetFile(string fileName)
         //{

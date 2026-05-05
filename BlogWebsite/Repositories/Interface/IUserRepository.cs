@@ -1,4 +1,5 @@
-﻿using BlogWebsite.Models;
+﻿using BlogWebsite.DTOs;
+using BlogWebsite.Models;
 
 namespace BlogWebsite.Repositories.Interface
 {
@@ -9,5 +10,9 @@ namespace BlogWebsite.Repositories.Interface
         Task<IEnumerable<Roles>> GetRoles();
         Task<bool> Logout(int userId);
         Task<IEnumerable<Users>> GetAllUsersAsync();
+        Task SaveRefreshTokenAsync(string token, int userId);
+        Task<RefreshTokenDto> GetRefreshTokenAsync(string token);
+        Task RevokeTokenAsync(string token);
+        Task<Users> GetUserByIdAsync(int id);
     }
 }
