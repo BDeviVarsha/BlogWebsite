@@ -11,13 +11,11 @@ namespace BlogWebsite.Controllers
     public class AuthController : ControllerBase
     {
         private readonly IUserRepository _userRepository;
-        //public readonly IConfiguration _configuration;
         private readonly JwtService _jwtService;
 
         public AuthController(IUserRepository userRepository, JwtService jwtService)
         {
             _userRepository = userRepository;
-            //_configuration = configuration;
             _jwtService = jwtService;
         }
 
@@ -40,64 +38,6 @@ namespace BlogWebsite.Controllers
             }
         }
 
-        //[HttpPost("login")]
-        //public async Task<IActionResult> Login([FromBody] LoginRequest loginData)
-        //{
-
-        //    var user = await _userRepository.Login(loginData.phoneNo, loginData.Role);
-
-        //    if (user == null)
-        //        return Unauthorized("Invalid phone number or role");
-
-        //    var token = _jwtService.GenerateJwtToken(user);
-
-        //    return Ok(new
-        //    {
-        //        message = "Login successful",
-        //        token,
-        //        user
-        //    });
-        //}
-
-        [HttpPost("refresh")]
-        public async Task<IActionResult> Refresh([FromBody] string refreshToken)
-        {
-            var storedToken = await _userRepository.GetRefreshTokenAsync(refreshToken);
-
-            if (storedToken == null ||
-                storedToken.IsRevoked ||
-                storedToken.ExpiryDate < DateTime.UtcNow)
-            {
-                return Unauthorized("Invalid refresh token");
-            }
-
-            var user = await _userRepository.GetUserByIdAsync(storedToken.UserId);
-            if (user == null)
-            {
-                return Unauthorized("Invalid refresh token");
-            }
-            // rotate token
-            //await _userRepository.RevokeTokenAsync(refreshToken);
-
-            //var newRefreshToken = _jwtService.GenerateRefreshToken();
-            //await _userRepository.SaveRefreshTokenAsync(newRefreshToken, user.Id);
-
-            //var newAccessToken = _jwtService.GenerateJwtToken(user);
-
-            var newAccessToken = _jwtService.GenerateJwtToken(user);
-            var newRefreshToken = _jwtService.GenerateRefreshToken();
-
-            await _userRepository.RevokeTokenAsync(refreshToken);
-            await _userRepository.SaveRefreshTokenAsync(newRefreshToken, user.Id);
-
-            return Ok(new
-            {
-                accessToken = newAccessToken,
-                refreshToken = newRefreshToken
-            });
-        }
-        
-
         [HttpPost("login")]
         public async Task<IActionResult> Login([FromBody] LoginRequest loginData)
         {
@@ -106,16 +46,12 @@ namespace BlogWebsite.Controllers
             if (user == null)
                 return Unauthorized("Invalid phone number or role");
 
-            var accessToken = _jwtService.GenerateJwtToken(user);
-            var refreshToken = _jwtService.GenerateRefreshToken();
-
-            await _userRepository.SaveRefreshTokenAsync(refreshToken, user.Id);
+            var token = _jwtService.GenerateJwtToken(user);
 
             return Ok(new
             {
                 message = "Login successful",
-                accessToken,
-                refreshToken,
+                token,
                 user
             });
         }
@@ -144,12 +80,5 @@ namespace BlogWebsite.Controllers
 
             return Ok(new { message = "Logout successful" });
         }
-        //[HttpPost("logout")]
-        //public async Task<IActionResult> Logout([FromBody] string refreshToken)
-        //{
-        //    await _userRepository.RevokeTokenAsync(refreshToken);
-
-        //    return Ok(new { message = "Logout successful" });
-        //}
     }
 }
