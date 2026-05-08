@@ -9,5 +9,6 @@ namespace BlogWebsite.Repositories.Interface
         Task<IEnumerable<Post>> GetPostsByUserId(int userId);
         Task<bool> DeletePostAsync(int postId, int userId);
         Task<Post?> EditPostById(int postId, Post post);
+        Task<IEnumerable<Announcement>> GetAnnouncement();
     }
 }

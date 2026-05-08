@@ -1,4 +1,5 @@
 ﻿using BlogWebsite.DTOs;
+using BlogWebsite.Models;
 using BlogWebsite.Repositories.Interface;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -65,6 +66,25 @@ namespace BlogWebsite.Controllers
                 return NotFound(new { message = "Post not found" });
 
             return Ok(new { message = "Post approved" });
+        }
+        [HttpPost("announcements")]
+        public async Task<IActionResult> CreateAnnouncement([FromBody] Announcement announcement)
+        {
+            string name = "";
+            if (User.Identity != null && User.Identity.IsAuthenticated) 
+            {
+                name = User.Identity.Name;
+            }
+            announcement.Created_by = name;
+            if (announcement == null)
+                return BadRequest(new { message = "Invalid announcement data" });
+
+            var result = await _repo.CreateAnnouncement(announcement);
+
+            if (result <= 0)
+                return StatusCode(500, new { message = "Failed to create announcement" });
+
+            return Ok(new { message = "Announcement created successfully" });
         }
     }
 }

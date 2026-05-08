@@ -88,8 +88,7 @@ namespace BlogWebsite.Hubs
             // Notify sender (messages were seen)
             if (_connections.TryGetValue(senderId, out var senderConn))
             {
-                await Clients.Client(senderConn)
-                    .SendAsync("MessagesSeen", seenMessageIds);
+                await Clients.Client(senderConn).SendAsync("MessagesSeen", seenMessageIds);
             }
         }
     }

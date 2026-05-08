@@ -75,6 +75,7 @@ namespace BlogWebsite.Controllers
 
         //    return File(stream, contentType, fileName);
         //}
+
         [HttpGet("my-posts")]
         public async Task<IActionResult> GetMyPosts()
         {
@@ -84,6 +85,7 @@ namespace BlogWebsite.Controllers
 
             return Ok(posts);
         }
+
         [HttpDelete("my-posts/{postId}")]
         public async Task<IActionResult> DeleteMyPost(int postId)
         {
@@ -93,6 +95,7 @@ namespace BlogWebsite.Controllers
                 return NotFound(new { message = "Post not found or you don't have permission to delete it" });
             return Ok(new { message = "Post deleted successfully" });
         }
+
         [HttpPut("my-posts/{postId}")]
         public async Task<IActionResult> EditMyPost(int postId, [FromBody] Post post)
         {
@@ -102,6 +105,13 @@ namespace BlogWebsite.Controllers
             if (updatedPost == null)
                 return NotFound(new { message = "Post not found or you don't have permission to edit it" });
             return Ok(updatedPost);
+        }
+
+        [HttpGet("announcements")]
+        public async Task<IActionResult> GetAnnouncement()
+        {
+            var result = await _homeRepository.GetAnnouncement();
+            return Ok(result);
         }
     }
 }

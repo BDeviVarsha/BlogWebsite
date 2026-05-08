@@ -54,5 +54,10 @@ namespace BlogWebsite.Repositories.Implementation
                 post.UserId
             });
         }
+        public async Task<IEnumerable<Announcement>> GetAnnouncement()
+        {
+            var query = @"SELECT * FROM Announcement order by id desc";
+            return await _db.QueryAsync<Announcement>(query);
+        }
     }
 }

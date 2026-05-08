@@ -38,5 +38,10 @@ namespace BlogWebsite.Repositories.Implementation
             var result = await _db.ExecuteAsync(query, new { Id = id });
             return result > 0;
         }
+        public async Task<int> CreateAnnouncement(Announcement announcement)
+        {
+            var query = @"INSERT INTO Announcement (Title, Description, Is_Pinned, Created_at, Created_by) VALUES (@Title, @Description, @Is_Pinned, @Created_at, @Created_by)";
+            return await _db.ExecuteAsync(query, announcement);
+        }
     }
 }

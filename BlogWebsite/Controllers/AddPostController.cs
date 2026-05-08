@@ -14,7 +14,7 @@ namespace BlogWebsite.Controllers
         {
             _addPostRepository = addPostRepository;
         }
-        [HttpPost]
+        [HttpPost]  
         public async Task<IActionResult> Post([FromForm] PostDto postdto)
         {
             string username = "Anonymous";

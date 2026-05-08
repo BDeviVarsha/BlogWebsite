@@ -28,13 +28,6 @@ namespace BlogWebsite.Repositories.Implementation
                 {
                     if (file.Length > 0)
                     {
-                        //using var ms = new MemoryStream();
-                        //await file.CopyToAsync(ms);
-                        //_sftpService.UploadFile(ms, file.FileName);
-                        //remoteFilePaths.Add($"{_sftpService.BasePath}/{file.FileName}");
-
-                        //using var ms = new MemoryStream();
-                        //await file.CopyToAsync(ms);
                         var remoteFilePath = await _sftpService.UploadFileAsync(file);
                         remoteFilePaths.Add(remoteFilePath);
                     }

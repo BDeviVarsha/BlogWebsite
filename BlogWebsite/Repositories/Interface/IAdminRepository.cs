@@ -8,5 +8,7 @@ namespace BlogWebsite.Repositories.Interface
         Task<bool> DeletePost(int id, string reason);
         Task<bool> RejectPost(int id, string reason);
         Task<bool> ApprovePost(int id);
+        Task<int> CreateAnnouncement(Announcement announcement);
+
     }
 }

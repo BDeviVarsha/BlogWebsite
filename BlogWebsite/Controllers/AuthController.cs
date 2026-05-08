@@ -38,6 +38,38 @@ namespace BlogWebsite.Controllers
             }
         }
 
+        [HttpPost("refresh")]
+        public async Task<IActionResult> Refresh([FromBody] string refreshToken)
+        {
+            var storedToken = await _userRepository.GetRefreshTokenAsync(refreshToken);
+
+            if (storedToken == null || storedToken.IsRevoked || storedToken.ExpiryDate < DateTime.UtcNow)
+            {
+                return Unauthorized("Invalid refresh token");
+            }
+
+            var user = await _userRepository.GetUserByIdAsync(storedToken.UserId);
+            if (user == null)
+            {
+                return Unauthorized("Invalid refresh token");
+            }
+            // rotate token
+            await _userRepository.RevokeTokenAsync(refreshToken);
+
+            var newRefreshToken = _jwtService.GenerateRefreshToken();
+            await _userRepository.SaveRefreshTokenAsync(newRefreshToken, user.Id);
+
+            var newAccessToken = _jwtService.GenerateJwtToken(user);
+
+
+            return Ok(new
+            {
+                accessToken = newAccessToken,
+                refreshToken = newRefreshToken
+            });
+        }
+        
+
         [HttpPost("login")]
         public async Task<IActionResult> Login([FromBody] LoginRequest loginData)
         {
@@ -46,12 +78,16 @@ namespace BlogWebsite.Controllers
             if (user == null)
                 return Unauthorized("Invalid phone number or role");
 
-            var token = _jwtService.GenerateJwtToken(user);
+            var accessToken = _jwtService.GenerateJwtToken(user);
+            var refreshToken = _jwtService.GenerateRefreshToken();
+
+            await _userRepository.SaveRefreshTokenAsync(refreshToken, user.Id);
+
 
             return Ok(new
             {
                 message = "Login successful",
-                token,
+                accessToken, refreshToken,
                 user
             });
         }
@@ -69,14 +105,20 @@ namespace BlogWebsite.Controllers
                 return StatusCode(500, ex.Message);
             }
         }
-
         [HttpPost("logout")]
         public async Task<IActionResult> Logout([FromBody] LogoutDto logoutDto)
-        {            
+        {
+            // update user inactive
             var result = await _userRepository.Logout(logoutDto.userId);
 
             if (!result)
                 return NotFound("User not found");
+
+            // revoke refresh token
+            if (!string.IsNullOrEmpty(logoutDto.refreshToken))
+            {
+                await _userRepository.RevokeTokenAsync(logoutDto.refreshToken);
+            }
 
             return Ok(new { message = "Logout successful" });
         }
