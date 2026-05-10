@@ -1,4 +1,5 @@
 ﻿using BlogWebsite.DTOs;
+using BlogWebsite.Models;
 using BlogWebsite.Repositories.Interface;
 using BlogWebsite.Services;
 using Dapper;
@@ -49,6 +50,53 @@ namespace BlogWebsite.Repositories.Implementation
                 Status = status,
                 postDto.UserId,
 
+            });
+        }
+        public async Task<Post?> Update(int postId, PostDto postDto)
+        {
+            List<string> remoteFilePaths = new();
+
+            if (postDto.Files != null && postDto.Files.Any())
+            {
+                foreach (var file in postDto.Files)
+                {
+                    if (file.Length > 0)
+                    {
+                        var remoteFilePath = await _sftpService.UploadFileAsync(file);
+                        remoteFilePaths.Add(remoteFilePath);
+                    }
+                }
+            }
+
+            // If no new files uploaded, check for existing file path sent from frontend
+            string filesCsv;
+            if (remoteFilePaths.Any())
+            {
+                filesCsv = string.Join(",", remoteFilePaths);
+            }
+            else
+            {
+                // Fallback: keep existing filepath (frontend sends it as 'existingFilePath' form field)
+                // We'll re-query the existing post to preserve its filepath
+                var existing = await _db.QueryFirstOrDefaultAsync<Post>(
+                    "SELECT * FROM post WHERE postid = @PostId AND userid = @UserId",
+                    new { PostId = postId, UserId = postDto.UserId });
+
+                filesCsv = existing?.FilePath ?? "";
+            }
+
+            var sql = @"UPDATE post 
+                SET title = @Title, description = @Description, filepath = @FilePath
+                WHERE postid = @PostId AND userid = @UserId
+                RETURNING *";
+
+            return await _db.QueryFirstOrDefaultAsync<Post>(sql, new
+            {
+                PostId = postId,
+                postDto.Title,
+                postDto.Description,
+                FilePath = filesCsv,
+                UserId = postDto.UserId
             });
         }
     }

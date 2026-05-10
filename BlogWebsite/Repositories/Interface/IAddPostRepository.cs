@@ -6,5 +6,6 @@ namespace BlogWebsite.Repositories.Interface
     public interface IAddPostRepository
     {
         public Task<int> Create(PostDto postDto);
+        Task<Post?> Update(int postId, PostDto postDto);
     }
 }

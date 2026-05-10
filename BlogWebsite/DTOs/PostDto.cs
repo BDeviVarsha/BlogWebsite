@@ -7,5 +7,6 @@
         public string? Description { get; set; }
         public List<IFormFile>? Files { get; set; }
         public int? UserId { get; set; } = null;
+        public string? ExistingFilePath { get; set; }
     }
 }
