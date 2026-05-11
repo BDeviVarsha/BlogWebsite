@@ -32,50 +32,6 @@ namespace BlogWebsite.Controllers
             });
         }
 
-        //[HttpGet("file/{fileName}")]
-        //public async Task<IActionResult> GetFile(string fileName)
-        //{
-        //    // Basic path traversal guard
-        //    if (fileName.Contains("..") || fileName.Contains("/") || fileName.Contains("\\"))
-        //        return BadRequest("Invalid file name.");
-
-        //    var stream = await _sftpService.DownloadFileAsync(fileName);
-
-        //    if (stream == null)
-        //        return NotFound(new { message = $"File '{fileName}' not found on remote server." });
-
-        //    var contentType = GetContentType(fileName);
-        //    return File(stream, contentType, enableRangeProcessing: true);
-        //}
-
-        //private static string GetContentType(string fileName)
-        //{
-        //    var ext = Path.GetExtension(fileName).ToLowerInvariant();
-        //    return ext switch
-        //    {
-        //        ".jpg" or ".jpeg" => "image/jpeg",
-        //        ".png" => "image/png",
-        //        ".mp3" => "audio/mpeg",
-        //        ".mp4" => "video/mp4",
-        //        _ => "application/octet-stream"
-        //    };
-        //}
-        //[HttpGet("file/{fileName}")]
-        //public IActionResult GetFile(string fileName)
-        //{
-        //    var stream = _sftpService.DownloadFile(fileName);
-        //    if (stream == null)
-        //        return NotFound();
-
-        //    var contentType = fileName.EndsWith(".mp3") ? "audio/mpeg" :
-        //                      fileName.EndsWith(".png") ? "image/png" :
-        //                      fileName.EndsWith(".jpg") ? "image/jpeg" :
-        //                      fileName.EndsWith(".mp4") ? "video/mp4" :
-        //                      "application/octet-stream";
-
-        //    return File(stream, contentType, fileName);
-        //}
-
         [HttpGet("my-posts")]
         public async Task<IActionResult> GetMyPosts()
         {

@@ -78,9 +78,7 @@ namespace BlogWebsite.Repositories.Implementation
             {
                 // Fallback: keep existing filepath (frontend sends it as 'existingFilePath' form field)
                 // We'll re-query the existing post to preserve its filepath
-                var existing = await _db.QueryFirstOrDefaultAsync<Post>(
-                    "SELECT * FROM post WHERE postid = @PostId AND userid = @UserId",
-                    new { PostId = postId, UserId = postDto.UserId });
+                var existing = await _db.QueryFirstOrDefaultAsync<Post>("SELECT * FROM post WHERE postid = @PostId AND userid = @UserId", new { PostId = postId, UserId = postDto.UserId });
 
                 filesCsv = existing?.FilePath ?? "";
             }
@@ -96,7 +94,7 @@ namespace BlogWebsite.Repositories.Implementation
                 postDto.Title,
                 postDto.Description,
                 FilePath = filesCsv,
-                UserId = postDto.UserId
+                postDto.UserId
             });
         }
     }
