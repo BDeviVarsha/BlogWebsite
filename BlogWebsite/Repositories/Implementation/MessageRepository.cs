@@ -52,9 +52,6 @@ namespace BlogWebsite.Repositories.Implementation
             var seenMessageIds = await _db.QueryAsync<int>(query, new { senderId, receiverId });
 
             return seenMessageIds.ToList();
-            //await _db.ExecuteAsync(query, new { senderId, receiverId });
-            //var rows = await _db.ExecuteAsync(query, new { senderId, receiverId });
-            //Console.WriteLine($"Rows updated: {rows}");
         }
         public int Count()
         {

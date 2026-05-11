@@ -1,5 +1,6 @@
 ﻿using BlogWebsite.DTOs;
 using BlogWebsite.Models;
+using BlogWebsite.Repositories.Implementation;
 using BlogWebsite.Repositories.Interface;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -85,6 +86,32 @@ namespace BlogWebsite.Controllers
                 return StatusCode(500, new { message = "Failed to create announcement" });
 
             return Ok(new { message = "Announcement created successfully" });
+        }
+        [HttpGet("myannouncements")]
+        public async Task<IActionResult> GetMyAnnouncement()
+        {
+            var username = User.Identity.Name;
+            var result = await _repo.GetMyAnnouncements(username);
+            return Ok(result);
+        }
+        [HttpDelete("myannouncements/{id}")]
+        public async Task<IActionResult> DeleteAnnouncements(int id)
+        {
+            var username = User.Identity.Name;
+            var del = await _repo.DeleteAnnouncementAsync(id, username);
+            return Ok(new { mesage = "Announcement deleted successfully" });
+        }
+        [HttpPut("myannouncements/{id}")]
+        public async Task<IActionResult> EditAnnouncementAsync(int id, [FromBody] Announcement announcement)
+        {
+            var username = User.Identity?.Name;
+            announcement.Created_by = username;
+            var edit = await _repo.EditAnnouncementAsync(id, announcement);
+            if (edit == null)
+            {
+                return NotFound(new { message = "No announcements to edit" });
+            }
+            return Ok(edit);
         }
     }
 }

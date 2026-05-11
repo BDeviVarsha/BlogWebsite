@@ -43,5 +43,22 @@ namespace BlogWebsite.Repositories.Implementation
             var query = @"INSERT INTO Announcement (Title, Description, Is_Pinned, Created_at, Created_by) VALUES (@Title, @Description, @Is_Pinned, @Created_at, @Created_by)";
             return await _db.ExecuteAsync(query, announcement);
         }
+        public async Task<IEnumerable<Announcement>> GetMyAnnouncements(string created_by)
+        {
+            var query = @"SELECT * FROM Announcement where created_by = @Created_by order by id desc";
+            return await _db.QueryAsync<Announcement>(query, new { Created_by = created_by });
+        }
+        public async Task<bool> DeleteAnnouncementAsync(int id, string created_by)
+        {
+            var query = @"DELETE FROM Announcement where id =@Id AND created_by = @Created_by";
+            var result = await _db.ExecuteAsync(query, new { Id = id, Created_by = created_by });
+            return result > 0;
+        }
+        public async Task<Announcement> EditAnnouncementAsync(int id, Announcement announcement)
+        {
+            var query = @"UPDATE Announcement set title=@Title, description=@Description, is_pinned=@Is_Pinned where id=@Id and created_by = @Created_by returning *";
+            return await _db.QueryFirstOrDefaultAsync<Announcement>(query, new { Id = id, announcement.Title, announcement.Description, announcement.Is_Pinned, Created_by = announcement.Created_by });
+        }
+
     }
 }

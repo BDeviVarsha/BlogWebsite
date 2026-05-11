@@ -2,6 +2,8 @@
 using BlogWebsite.Repositories.Interface;
 using BlogWebsite.Services;
 using Microsoft.AspNetCore.Mvc;
+using BlogWebsite.Models;
+using Microsoft.AspNetCore.Authorization;
 
 namespace BlogWebsite.Controllers
 {
@@ -28,7 +30,8 @@ namespace BlogWebsite.Controllers
 
             return Ok(new
             {
-                posts, total
+                posts,
+                total
             });
         }
 

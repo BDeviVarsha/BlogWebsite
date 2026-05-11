@@ -9,6 +9,9 @@ namespace BlogWebsite.Repositories.Interface
         Task<bool> RejectPost(int id, string reason);
         Task<bool> ApprovePost(int id);
         Task<int> CreateAnnouncement(Announcement announcement);
+        Task<IEnumerable<Announcement>> GetMyAnnouncements(string createdBy);
+        Task<bool> DeleteAnnouncementAsync(int id, string createdBy);
+        Task<Announcement?> EditAnnouncementAsync(int id, Announcement announcement);
 
     }
 }
